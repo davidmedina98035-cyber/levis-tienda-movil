@@ -26,7 +26,7 @@ class LoginViewModel : ViewModel() {
     private val _estado = MutableStateFlow<Estado>(Estado.Idle)
     val estado: StateFlow<Estado> = _estado
 
-    fun login(onSuccess: (String) -> Unit) {
+    fun login(onSuccess: (String, String) -> Unit) {
         if (email.isBlank() || password.isBlank()) {
             _estado.value = Estado.Error("Completa todos los campos")
             return
@@ -38,10 +38,11 @@ class LoginViewModel : ViewModel() {
                 val response = RetrofitClient.api.login(LoginRequest(email, password))
                 if (response.isSuccessful) {
                     _estado.value = Estado.Exitoso
-                    val Token = response.body()?.Token ?: ""
-                    onSuccess(Token)
+                    val token = response.body()?.Token ?: ""
+                    onSuccess(token, email)
                 } else {
-                    _estado.value = Estado.Error("Credenciales incorrectas")
+                    _estado.value =
+                        Estado.Error("Error ${response.code()}: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
                 _estado.value = Estado.Error("Sin conexión: ${e.message}")

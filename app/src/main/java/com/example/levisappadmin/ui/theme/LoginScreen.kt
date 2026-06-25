@@ -17,9 +17,10 @@ import com.example.levisappadmin.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (String) -> Unit,
+    onLoginSuccess: (String, String) -> Unit,
     viewModel: LoginViewModel = viewModel()
-) {
+)
+{
     val estado by viewModel.estado.collectAsState()
 
     Column(

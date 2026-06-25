@@ -7,7 +7,13 @@ import retrofit2.Response
 import retrofit2.http.*
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import com.example.levisappadmin.model.Usuario
+import com.example.levisappadmin.model.CrearUsuarioRequest
+import com.example.levisappadmin.model.ActualizarUsuarioRequest
 import com.example.levisappadmin.model.ProductoRequest
+import com.example.levisappadmin.model.VentaDetalleRaw
+import com.example.levisappadmin.model.PerfilResponse
+import com.example.levisappadmin.model.ActualizarPerfilRequest
 
 interface ApiService {
 
@@ -53,4 +59,45 @@ interface ApiService {
         @Part("genero") genero: RequestBody,
         @Part imagen: MultipartBody.Part?
     ): Response<Producto>
+
+    @GET("api/usuarios")
+    suspend fun getUsuarios(
+        @Header("Authorization") token: String
+    ): Response<List<Usuario>>
+
+    @POST("api/usuarios")
+    suspend fun crearUsuario(
+        @Header("Authorization") token: String,
+        @Body body: CrearUsuarioRequest
+    ): Response<Usuario>
+
+    @PUT("api/usuarios/{id}")
+    suspend fun actualizarUsuario(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body body: ActualizarUsuarioRequest
+    ): Response<Usuario>
+
+    @DELETE("api/usuarios/{id}")
+    suspend fun eliminarUsuario(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<Unit>
+
+    @GET("api/productos/ReporteVentas")
+    suspend fun getReporteVentas(
+        @Header("Authorization") token: String
+    ): Response<List<VentaDetalleRaw>>
+
+    @GET("api/auth/perfil/{email}")
+    suspend fun getPerfil(
+        @Header("Authorization") token: String,
+        @Path("email") email: String
+    ): Response<PerfilResponse>
+
+    @PUT("api/auth/perfil/actualizar")
+    suspend fun actualizarPerfil(
+        @Header("Authorization") token: String,
+        @Body body: ActualizarPerfilRequest
+    ): Response<LoginResponse>
 }

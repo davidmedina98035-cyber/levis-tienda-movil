@@ -1,5 +1,4 @@
 package com.example.levisappadmin
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,9 +20,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.levisappadmin.model.Producto
 import com.example.levisappadmin.ui.theme.AgregarProductoScreen
+import com.example.levisappadmin.ui.theme.AjustesScreen
 import com.example.levisappadmin.ui.theme.EditarProductoScreen
 import com.example.levisappadmin.ui.theme.InventarioScreen
 import com.example.levisappadmin.ui.theme.LoginScreen
+import com.example.levisappadmin.ui.theme.UsuariosScreen
+import com.example.levisappadmin.ui.theme.VentasScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,18 +33,28 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 var token by remember { mutableStateOf<String?>(null) }
+                var emailUsuario by remember { mutableStateOf("") }
                 var pantalla by remember { mutableStateOf("login") }
                 var productoSeleccionado by remember { mutableStateOf<Producto?>(null) }
 
                 when (pantalla) {
                     "login" -> LoginScreen(
-                        onLoginSuccess = { tkn ->
+                        onLoginSuccess = { tkn, email ->
                             token = tkn
+                            emailUsuario = email
                             pantalla = "dashboard"
                         }
                     )
                     "dashboard" -> MainDashboard(
-                        onInventarioClick = { pantalla = "inventario" }
+                        onInventarioClick = { pantalla = "inventario" },
+                        onUsuariosClick = { pantalla = "usuarios" },
+                        onVentasClick = { pantalla = "ventas" },
+                        onAjustesClick = { pantalla = "ajustes" }
+                    )
+                    "ajustes" -> AjustesScreen(
+                        token = token ?: "",
+                        email = emailUsuario,
+                        onBack = { pantalla = "dashboard" }
                     )
                     "inventario" -> InventarioScreen(
                         token = token ?: "",
@@ -52,6 +64,14 @@ class MainActivity : ComponentActivity() {
                             productoSeleccionado = producto
                             pantalla = "editar"
                         }
+                    )
+                    "usuarios" -> UsuariosScreen(
+                        token = token ?: "",
+                        onBack = { pantalla = "dashboard" }
+                    )
+                    "ventas" -> VentasScreen(
+                        token = token ?: "",
+                        onBack = { pantalla = "dashboard" }
                     )
                     "agregar" -> AgregarProductoScreen(
                         token = token ?: "",
@@ -71,7 +91,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainDashboard(onInventarioClick: () -> Unit) {
+fun MainDashboard(
+    onInventarioClick: () -> Unit,
+    onUsuariosClick: () -> Unit,
+    onVentasClick: () -> Unit,
+    onAjustesClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -99,9 +124,9 @@ fun MainDashboard(onInventarioClick: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item { MenuCard("Inventario", Icons.Default.List, "Stock Jeans", onClick = onInventarioClick) }
-            item { MenuCard("Usuarios", Icons.Default.Person, "Roles") }
-            item { MenuCard("Ventas", Icons.Default.ShoppingCart, "Facturas") }
-            item { MenuCard("Ajustes", Icons.Default.Settings, "Config") }
+            item { MenuCard("Usuarios", Icons.Default.Person, "Roles", onClick = onUsuariosClick) }
+            item { MenuCard("Ventas", Icons.Default.ShoppingCart, "Facturas", onClick = onVentasClick) }
+            item { MenuCard("Ajustes", Icons.Default.Settings, "Config", onClick = onAjustesClick) }
         }
     }
 }
