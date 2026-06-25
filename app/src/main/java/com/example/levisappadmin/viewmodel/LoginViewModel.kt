@@ -1,50 +1,72 @@
 package com.example.levisappadmin.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.compose.runtime.mutableStateOf
 import com.example.levisappadmin.model.LoginRequest
+import com.example.levisappadmin.model.RegisterRequest
+import com.example.levisappadmin.model.User
 import com.example.levisappadmin.network.RetrofitClient
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
+    private val api = RetrofitClient.api
 
-    var email by mutableStateOf("")
-    var password by mutableStateOf("")
+    val error = mutableStateOf<String?>(null)
+    val cargando = mutableStateOf(false)
+    val user = mutableStateOf<User?>(null)
 
-    sealed class Estado {
-        object Idle : Estado()
-        object Cargando : Estado()
-        object Exitoso : Estado()
-        data class Error(val mensaje: String) : Estado()
-    }
-
-    private val _estado = MutableStateFlow<Estado>(Estado.Idle)
-    val estado: StateFlow<Estado> = _estado
-
-    fun login(onSuccess: (String) -> Unit) {
-        if (email.isBlank() || password.isBlank()) {
-            _estado.value = Estado.Error("Completa todos los campos")
-            return
-        }
-
+    fun registrarUsuario(
+        nombre: String,
+        email: String,
+        password: String,
+        telefono: String,
+        direccion: String,
+        onSuccess: () -> Unit
+    ) {
         viewModelScope.launch {
-            _estado.value = Estado.Cargando
+            cargando.value = true
             try {
-                val response = RetrofitClient.api.login(LoginRequest(email, password))
+                val response = api.register(
+                    RegisterRequest(nombre, email, password, telefono, direccion)
+                )
                 if (response.isSuccessful) {
-                    _estado.value = Estado.Exitoso
-                    val Token = response.body()?.Token ?: ""
-                    onSuccess(Token)
+                    user.value = response.body()?.user
+                    error.value = null
+                    onSuccess()
                 } else {
-                    _estado.value = Estado.Error("Credenciales incorrectas")
+                    error.value = response.errorBody()?.string() ?: "Error en registro"
                 }
             } catch (e: Exception) {
-                _estado.value = Estado.Error("Sin conexión: ${e.message}")
+                error.value = e.message
+            } finally {
+                cargando.value = false
+            }
+        }
+    }
+
+    fun loginUsuario(email: String, password: String, onSuccess: (String) -> Unit) {
+        viewModelScope.launch {
+            cargando.value = true
+            try {
+                val response = api.login(LoginRequest(email, password))
+                if (response.isSuccessful) {
+                    val loggedUser = response.body()?.user
+                    if (loggedUser != null) {
+                        user.value = loggedUser
+                        error.value = null
+                        // Usamos el id_usuario como "token" de navegación, ya que no hay JWT
+                        onSuccess(loggedUser.id_usuario.toString())
+                    } else {
+                        error.value = "No se recibió usuario del servidor"
+                    }
+                } else {
+                    error.value = response.errorBody()?.string() ?: "Error en login"
+                }
+            } catch (e: Exception) {
+                error.value = e.message
+            } finally {
+                cargando.value = false
             }
         }
     }

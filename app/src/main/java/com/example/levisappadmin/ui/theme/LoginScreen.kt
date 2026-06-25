@@ -1,8 +1,6 @@
 package com.example.levisappadmin.ui.theme
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,79 +8,140 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.levisappadmin.viewmodel.LoginViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 
 @Composable
 fun LoginScreen(
+    viewModel: LoginViewModel,
     onLoginSuccess: (String) -> Unit,
-    viewModel: LoginViewModel = viewModel()
+    onRegisterClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit
 ) {
-    val estado by viewModel.estado.collectAsState()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var mostrarPassword by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFEEEEEE))
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    val error = viewModel.error.value
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = LevisGrisClaro
     ) {
-        Text(
-            text = "LEVI'S",
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Black,
-            color = Color(0xFFC41230)
-        )
-        Text(
-            text = "ADMINISTRACIÓN",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 40.dp)
-        )
-
-        OutlinedTextField(
-            value = viewModel.email,
-            onValueChange = { viewModel.email = it },
-            label = { Text("Correo electrónico") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = viewModel.password,
-            onValueChange = { viewModel.password = it },
-            label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = { viewModel.login(onLoginSuccess) },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC41230))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("INGRESAR", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        when (estado) {
-            is LoginViewModel.Estado.Cargando -> CircularProgressIndicator(color = Color(0xFFC41230))
-            is LoginViewModel.Estado.Error -> Text(
-                text = (estado as LoginViewModel.Estado.Error).mensaje,
-                color = Color.Red
+            // Logo / título
+            Text(
+                "LEVI'S",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    color = LevisRojo,
+                    fontSize = 36.sp
+                )
             )
-            else -> {}
+            Text(
+                "SISTEMA DE ADMINISTRACIÓN",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = LevisNegro,
+                    letterSpacing = 1.sp
+                )
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Text(
+                "Iniciar Sesión",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = LevisNegro
+                )
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = LevisRojo,
+                    focusedLabelColor = LevisRojo,
+                    cursorColor = LevisRojo
+                )
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Contraseña") },
+                visualTransformation = if (mostrarPassword) VisualTransformation.None
+                else PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { mostrarPassword = !mostrarPassword }) {
+                        Icon(
+                            imageVector = if (mostrarPassword) Icons.Filled.VisibilityOff
+                            else Icons.Filled.Visibility,
+                            contentDescription = null,
+                            tint = LevisRojo
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = LevisRojo,
+                    focusedLabelColor = LevisRojo,
+                    cursorColor = LevisRojo
+                )
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    viewModel.loginUsuario(email, password) { token ->
+                        onLoginSuccess(token)
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LevisRojo,
+                    contentColor = Color.White
+                ),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Ingresar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            TextButton(onClick = onRegisterClick) {
+                Text("¿No tienes cuenta? Regístrate", color = LevisRojo)
+            }
+
+            TextButton(onClick = onForgotPasswordClick) {
+                Text("¿Olvidaste tu contraseña?", color = LevisRojo)
+            }
+
+            if (error != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(error, color = LevisRojo)
+            }
         }
     }
 }

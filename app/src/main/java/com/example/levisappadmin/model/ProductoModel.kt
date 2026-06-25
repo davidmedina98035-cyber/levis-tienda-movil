@@ -1,23 +1,38 @@
 package com.example.levisappadmin.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Producto(
-    val id_producto: Int,
-    val nombreProducto: String,
-    val descripcionProducto: String? = null,
-    val precioProducto: Double,
+    @SerializedName("id_producto")
+    val id: Int? = null,
+
+    @SerializedName("nombreProducto")
+    val nombre: String,
+
+    @SerializedName("descripcionProducto")
+    val descripcion: String? = null,
+
+    @SerializedName("precioProducto")
+    val precio: Double,
+
     val talla: String? = null,
+
     val categoria: String? = null,
-    val stockProducto: Int,
+
+    @SerializedName("stockProducto")
+    val stock: Int,
+
     val genero: String? = null,
+
     val imagen: String? = null
 )
 
 data class ProductoRequest(
-    val nombreProducto: String,
-    val descripcionProducto: String,
-    val precioProducto: Double,
+    val nombre: String,
+    val descripcion: String,
+    val precio: Double,
     val talla: String,
     val categoria: String,
-    val stockProducto: Int,
+    val stock: Int,
     val genero: String
 )
