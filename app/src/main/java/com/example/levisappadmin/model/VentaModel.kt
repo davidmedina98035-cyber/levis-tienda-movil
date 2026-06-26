@@ -31,3 +31,25 @@ data class ClienteConVentas(
     val email_usuario: String,
     val ventas: List<VentaAgrupada>
 )
+data class ItemVentaRequest(
+    val id_producto: Int,
+    val cantidad: Int,
+    val precioProducto: Double
+)
+
+data class VentaRequest(
+    val id_usuario: Int,
+    val total: Double,
+    val productos: List<ItemVentaRequest>
+)
+
+data class VentaResponse(
+    val Status: String,
+    val Message: String,
+    val id_venta: Int? = null
+)
+
+data class ItemCarrito(
+    val producto: Producto,
+    var cantidad: Int
+)

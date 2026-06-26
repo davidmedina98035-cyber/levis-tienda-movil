@@ -35,12 +35,12 @@ fun EditarProductoScreen(
     viewModel: InventarioViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    var nombre by remember { mutableStateOf(producto.nombreProducto) }
+    var nombre by remember { mutableStateOf(producto.nombreProducto ?: "") }
     var descripcion by remember { mutableStateOf(producto.descripcionProducto ?: "") }
-    var precio by remember { mutableStateOf(producto.precioProducto.toString()) }
+    var precio by remember { mutableStateOf(producto.precioProducto?.toString() ?: "") }
     var talla by remember { mutableStateOf(producto.talla ?: "") }
     var categoria by remember { mutableStateOf(producto.categoria ?: "pantalon") }
-    var stock by remember { mutableStateOf(producto.stockProducto.toString()) }
+    var stock by remember { mutableStateOf(producto.stockProducto?.toString() ?: "") }
     var genero by remember { mutableStateOf(producto.genero ?: "Hombre") }
     var imagenUri by remember { mutableStateOf<Uri?>(null) }
     var mensajeExito by remember { mutableStateOf(false) }
@@ -243,8 +243,8 @@ fun EditarProductoScreen(
 
                     viewModel.editarProducto(
                         token = token,
-                        id = producto.id_producto,
-                        nombre = nombre,
+                        id = producto.id_producto ?: 0,
+                        nombre = nombre ?: "",
                         descripcion = descripcion,
                         precio = precio,
                         talla = talla,

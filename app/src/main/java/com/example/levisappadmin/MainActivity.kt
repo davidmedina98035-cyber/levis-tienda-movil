@@ -18,14 +18,20 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.levisappadmin.model.Producto
 import com.example.levisappadmin.ui.theme.AgregarProductoScreen
 import com.example.levisappadmin.ui.theme.AjustesScreen
+import com.example.levisappadmin.ui.theme.CarritoScreen
+import com.example.levisappadmin.ui.theme.CatalogoScreen
 import com.example.levisappadmin.ui.theme.EditarProductoScreen
+import com.example.levisappadmin.ui.theme.ForgotPasswordScreen
 import com.example.levisappadmin.ui.theme.InventarioScreen
 import com.example.levisappadmin.ui.theme.LoginScreen
+import com.example.levisappadmin.ui.theme.RegisterScreen
 import com.example.levisappadmin.ui.theme.UsuariosScreen
 import com.example.levisappadmin.ui.theme.VentasScreen
+import com.example.levisappadmin.viewmodel.CatalogoViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,22 +40,38 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 var token by remember { mutableStateOf<String?>(null) }
                 var emailUsuario by remember { mutableStateOf("") }
+                var idUsuario by remember { mutableStateOf(0) }
                 var pantalla by remember { mutableStateOf("login") }
                 var productoSeleccionado by remember { mutableStateOf<Producto?>(null) }
 
+                // Compartido entre CatalogoScreen y CarritoScreen para mantener el carrito
+                val catalogoViewModel: CatalogoViewModel = viewModel()
+
                 when (pantalla) {
                     "login" -> LoginScreen(
-                        onLoginSuccess = { tkn, email ->
+                        onLoginSuccess = { tkn, email, id ->
                             token = tkn
                             emailUsuario = email
+                            idUsuario = id
                             pantalla = "dashboard"
-                        }
+                        },
+                        onRegisterClick = { pantalla = "register" },
+                        onForgotPasswordClick = { pantalla = "forgotPassword" }
+                    )
+                    "register" -> RegisterScreen(
+                        onBack = { pantalla = "login" },
+                        onRegisterSuccess = { pantalla = "login" }
+                    )
+                    "forgotPassword" -> ForgotPasswordScreen(
+                        onBack = { pantalla = "login" },
+                        onExitooso = { pantalla = "login" }
                     )
                     "dashboard" -> MainDashboard(
                         onInventarioClick = { pantalla = "inventario" },
                         onUsuariosClick = { pantalla = "usuarios" },
                         onVentasClick = { pantalla = "ventas" },
-                        onAjustesClick = { pantalla = "ajustes" }
+                        onAjustesClick = { pantalla = "ajustes" },
+                        onCatalogoClick = { pantalla = "catalogo" }
                     )
                     "ajustes" -> AjustesScreen(
                         token = token ?: "",
@@ -84,6 +106,19 @@ class MainActivity : ComponentActivity() {
                             onBack = { pantalla = "inventario" }
                         )
                     }
+                    "catalogo" -> CatalogoScreen(
+                        token = token ?: "",
+                        onVerCarrito = { pantalla = "carrito" },
+                        onBack = { pantalla = "dashboard" },
+                        viewModel = catalogoViewModel
+                    )
+                    "carrito" -> CarritoScreen(
+                        token = token ?: "",
+                        idUsuario = idUsuario,
+                        onBack = { pantalla = "catalogo" },
+                        onVentaConfirmada = { pantalla = "catalogo" },
+                        viewModel = catalogoViewModel
+                    )
                 }
             }
         }
@@ -95,7 +130,8 @@ fun MainDashboard(
     onInventarioClick: () -> Unit,
     onUsuariosClick: () -> Unit,
     onVentasClick: () -> Unit,
-    onAjustesClick: () -> Unit
+    onAjustesClick: () -> Unit,
+    onCatalogoClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -127,6 +163,7 @@ fun MainDashboard(
             item { MenuCard("Usuarios", Icons.Default.Person, "Roles", onClick = onUsuariosClick) }
             item { MenuCard("Ventas", Icons.Default.ShoppingCart, "Facturas", onClick = onVentasClick) }
             item { MenuCard("Ajustes", Icons.Default.Settings, "Config", onClick = onAjustesClick) }
+            item { MenuCard("Catálogo", Icons.Default.Info, "Nueva venta", onClick = onCatalogoClick) }
         }
     }
 }

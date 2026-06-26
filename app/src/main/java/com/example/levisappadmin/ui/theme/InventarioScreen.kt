@@ -44,7 +44,7 @@ fun InventarioScreen(
 
     // ✅ Filtro aplicado localmente
     val productosFiltrados = productos.filter { producto ->
-        val coincideNombre = producto.nombreProducto
+        val coincideNombre = (producto.nombreProducto ?: "")
             .lowercase()
             .contains(busqueda.lowercase())
         val coincideCategoria = categoriaSeleccionada == "Todas" ||
@@ -196,8 +196,7 @@ fun InventarioScreen(
                                     ) {
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                text = producto.nombreProducto,
-                                                fontWeight = FontWeight.Bold,
+                                                text = "$ ${producto.precioProducto ?: 0.0}",                                                fontWeight = FontWeight.Bold,
                                                 fontSize = 16.sp
                                             )
                                             Text(
@@ -231,8 +230,7 @@ fun InventarioScreen(
                                             }
                                             IconButton(
                                                 onClick = {
-                                                    viewModel.eliminarProducto(token, producto.id_producto)
-                                                }
+                                                    viewModel.eliminarProducto(token, producto.id_producto ?: 0)                                                }
                                             ) {
                                                 Icon(
                                                     Icons.Default.Delete,

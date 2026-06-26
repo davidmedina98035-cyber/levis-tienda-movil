@@ -1,13 +1,18 @@
 package com.example.levisappadmin.model
 
 data class Producto(
-    val id_producto: Int,
-    val nombreProducto: String,
+    val id_producto: Int? = null,
+    val id: Int? = null,
+    val nombreProducto: String? = null,
+    val nombre: String? = null,
     val descripcionProducto: String? = null,
-    val precioProducto: Double,
+    val descripcion: String? = null,
+    val precioProducto: Double? = null,
+    val precio: Double = 0.0,
     val talla: String? = null,
     val categoria: String? = null,
-    val stockProducto: Int,
+    val stockProducto: Int? = null,
+    val stock: Int = 0,
     val genero: String? = null,
     val imagen: String? = null
 )

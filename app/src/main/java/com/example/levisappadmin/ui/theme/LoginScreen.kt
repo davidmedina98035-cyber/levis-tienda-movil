@@ -17,7 +17,9 @@ import com.example.levisappadmin.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (String, String) -> Unit,
+    onLoginSuccess: (String, String, Int) -> Unit,
+    onRegisterClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit,
     viewModel: LoginViewModel = viewModel()
 )
 {
@@ -64,7 +66,16 @@ fun LoginScreen(
             shape = RoundedCornerShape(12.dp)
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextButton(
+            onClick = onForgotPasswordClick,
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            Text("¿Olvidaste tu contraseña?", color = Color(0xFFC41230), fontSize = 13.sp)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = { viewModel.login(onLoginSuccess) },
@@ -76,6 +87,17 @@ fun LoginScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("¿No tienes cuenta?", fontSize = 13.sp, color = Color.Gray)
+            TextButton(onClick = onRegisterClick) {
+                Text("Regístrate", color = Color(0xFFC41230), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         when (estado) {
             is LoginViewModel.Estado.Cargando -> CircularProgressIndicator(color = Color(0xFFC41230))

@@ -26,12 +26,14 @@ class LoginViewModel : ViewModel() {
     private val _estado = MutableStateFlow<Estado>(Estado.Idle)
     val estado: StateFlow<Estado> = _estado
 
-    fun login(onSuccess: (String, String) -> Unit) {
+    private var _idUsuario = 0
+    val idUsuario get() = _idUsuario
+
+    fun login(onSuccess: (String, String, Int) -> Unit) {
         if (email.isBlank() || password.isBlank()) {
             _estado.value = Estado.Error("Completa todos los campos")
             return
         }
-
         viewModelScope.launch {
             _estado.value = Estado.Cargando
             try {
@@ -39,10 +41,11 @@ class LoginViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     _estado.value = Estado.Exitoso
                     val token = response.body()?.Token ?: ""
-                    onSuccess(token, email)
+                    val id = response.body()?.id_usuario ?: 0
+                    _idUsuario = id
+                    onSuccess(token, email, id)
                 } else {
-                    _estado.value =
-                        Estado.Error("Error ${response.code()}: ${response.errorBody()?.string()}")
+                    _estado.value = Estado.Error("Error ${response.code()}: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
                 _estado.value = Estado.Error("Sin conexión: ${e.message}")
