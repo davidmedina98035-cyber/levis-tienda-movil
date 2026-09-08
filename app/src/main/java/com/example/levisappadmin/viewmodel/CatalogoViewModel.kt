@@ -35,7 +35,7 @@ class CatalogoViewModel : ViewModel() {
                 val response = RetrofitClient.api.getProductos("Bearer $token")
                 if (response.isSuccessful) {
                     val lista = response.body() ?: emptyList()
-                    _productos.value = lista.filter { (it.stockProducto ?: it.stock) > 0 }
+                    _productos.value = lista.filter { it.totalStock > 0 }
                 } else {
                     _error.value = "Error al cargar productos"
                 }
@@ -47,14 +47,14 @@ class CatalogoViewModel : ViewModel() {
         }
     }
 
-    // ✅ DESPUÉS — reemplaza el objeto completo
     fun agregarAlCarrito(producto: Producto) {
         val carritoActual = _carrito.value.toMutableList()
-        val index = carritoActual.indexOfFirst { it.producto.id_producto == producto.id_producto }
+        val idProd = producto.id_producto ?: producto.id ?: 0
+        val index = carritoActual.indexOfFirst { (it.producto.id_producto ?: it.producto.id ?: 0) == idProd }
         if (index != -1) {
             val existente = carritoActual[index]
-            val stock = producto.stockProducto ?: producto.stock
-            if (existente.cantidad < stock) {
+            val stockTotal = producto.totalStock
+            if (existente.cantidad < stockTotal) {
                 carritoActual[index] = existente.copy(cantidad = existente.cantidad + 1)
             }
         } else {
@@ -65,7 +65,8 @@ class CatalogoViewModel : ViewModel() {
 
     fun quitarDelCarrito(producto: Producto) {
         val carritoActual = _carrito.value.toMutableList()
-        val index = carritoActual.indexOfFirst { it.producto.id_producto == producto.id_producto }
+        val idProd = producto.id_producto ?: producto.id ?: 0
+        val index = carritoActual.indexOfFirst { (it.producto.id_producto ?: it.producto.id ?: 0) == idProd }
         if (index != -1) {
             val existente = carritoActual[index]
             if (existente.cantidad > 1) {
@@ -78,7 +79,8 @@ class CatalogoViewModel : ViewModel() {
     }
 
     fun eliminarDelCarrito(producto: Producto) {
-        _carrito.value = _carrito.value.filter { it.producto.id_producto != producto.id_producto }
+        val idProd = producto.id_producto ?: producto.id ?: 0
+        _carrito.value = _carrito.value.filter { (it.producto.id_producto ?: it.producto.id ?: 0) != idProd }
     }
 
     fun limpiarCarrito() {
@@ -86,22 +88,23 @@ class CatalogoViewModel : ViewModel() {
     }
 
     fun totalCarrito(): Double {
-        return _carrito.value.sumOf {
-            val precio = it.producto.precioProducto ?: it.producto.precio
-            precio * it.cantidad
+        return _carrito.value.sumOf { item ->
+            val precio = item.producto.precioProducto ?: 0.0
+            precio * item.cantidad
         }
     }
 
     fun cantidadEnCarrito(producto: Producto): Int {
-        return _carrito.value.find { it.producto.id_producto == producto.id_producto }?.cantidad ?: 0
+        val idProd = producto.id_producto ?: producto.id ?: 0
+        return _carrito.value.find { (it.producto.id_producto ?: it.producto.id ?: 0) == idProd }?.cantidad ?: 0
     }
 
     fun confirmarVenta(token: String, idUsuario: Int) {
-        val items = _carrito.value.map {
+        val items = _carrito.value.map { item ->
             ItemVentaRequest(
-                id_producto = it.producto.id_producto ?: 0,
-                cantidad = it.cantidad,
-                precioProducto = it.producto.precioProducto ?: it.producto.precio
+                id_producto = item.producto.id_producto ?: item.producto.id ?: 0,
+                cantidad = item.cantidad,
+                talla = null // O un valor por defecto / campo de talla si tu ItemCarrito lo almacena en lugar de Producto
             )
         }
         if (items.isEmpty()) return
@@ -112,7 +115,10 @@ class CatalogoViewModel : ViewModel() {
                 val total = totalCarrito()
                 val response = RetrofitClient.api.crearVenta(
                     "Bearer $token",
-                    VentaRequest(idUsuario, total, items)
+                    VentaRequest(
+                        total_venta = total,
+                        productos = items
+                    )
                 )
                 if (response.isSuccessful) {
                     limpiarCarrito()

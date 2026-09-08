@@ -40,8 +40,11 @@ class LoginViewModel : ViewModel() {
                 val response = RetrofitClient.api.login(LoginRequest(email, password))
                 if (response.isSuccessful) {
                     _estado.value = Estado.Exitoso
-                    val token = response.body()?.Token ?: ""
-                    val id = response.body()?.id_usuario ?: 0
+                    val body = response.body()
+
+                    val token = body?.Token ?: ""
+                    val id = body?.id_usuario ?: 0
+
                     _idUsuario = id
                     onSuccess(token, email, id)
                 } else {

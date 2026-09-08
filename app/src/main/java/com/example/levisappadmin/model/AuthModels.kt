@@ -1,14 +1,22 @@
 package com.example.levisappadmin.model
 
+import com.google.gson.annotations.SerializedName
+
 data class LoginRequest(
     val email: String,
     val password: String
 )
 
 data class LoginResponse(
+    @SerializedName("token", alternate = ["Token"])
     val Token: String? = null,
+
+    @SerializedName("rol", alternate = ["Rol"])
     val Rol: String? = null,
+
+    @SerializedName("id_usuario", alternate = ["id", "userId"])
     val id_usuario: Int? = null,
+
     val mensaje: String? = null
 )
 

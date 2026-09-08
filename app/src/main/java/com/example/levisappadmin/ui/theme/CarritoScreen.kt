@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -49,21 +49,22 @@ fun CarritoScreen(
                 ) { Text("Aceptar", color = Color.White) }
             },
             title = { Text("¡Venta confirmada!", fontWeight = FontWeight.Bold, color = Color(0xFFC41230)) },
-            text = { Text("Tu compra se realizó exitosamente.") },
-            containerColor = Color.White
+            text = { Text("Tu compra se realizó exitosamente.", color = Color(0xFFE0E0E0)) },
+            containerColor = Color(0xFF121212)
         )
     }
 
     Scaffold(
+        containerColor = Color(0xFF121212),
         topBar = {
             TopAppBar(
-                title = { Text("Carrito", fontWeight = FontWeight.Bold, color = Color.White) },
+                title = { Text("Carrito", fontWeight = FontWeight.Bold, color = Color(0xFFFF3B30)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color(0xFFFF3B30))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFC41230))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1E1E1E))
             )
         }
     ) { padding ->
@@ -71,15 +72,15 @@ fun CarritoScreen(
             modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)
         ) {
             if (carrito.isEmpty()) {
-                Text("Tu carrito está vacío.", modifier = Modifier.padding(16.dp), color = Color.Gray)
+                Text("Tu carrito está vacío.", modifier = Modifier.padding(16.dp), color = Color(0xFFA0A0A0))
             } else {
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(carrito) { item ->
-                        val precio = item.producto.precioProducto ?: item.producto.precio
+                        val precio = item.producto.precioProducto ?: 0.0
                         Card(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
                             elevation = CardDefaults.cardElevation(4.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Row(
@@ -89,15 +90,16 @@ fun CarritoScreen(
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            item.producto.nombreProducto ?: item.producto.nombre ?: "",
+                                            item.producto.nombreProducto ?: "Sin nombre",
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFFC41230)
+                                            color = Color(0xFFFF3B30)
                                         )
-                                        Text("Precio unit.: $$precio", fontSize = 12.sp, color = Color.Gray)
+                                        Text("Precio unit.: $$precio", fontSize = 12.sp, color = Color(0xFFA0A0A0))
                                     }
                                     Text(
                                         "$${"%.2f".format(precio * item.cantidad)}",
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -105,25 +107,26 @@ fun CarritoScreen(
                                     OutlinedButton(
                                         onClick = { viewModel.quitarDelCarrito(item.producto) },
                                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFC41230))
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF3B30))
                                     ) { Text("−", fontSize = 18.sp) }
 
                                     Text(
                                         "${item.cantidad}",
                                         fontWeight = FontWeight.Bold,
+                                        color = Color.White,
                                         modifier = Modifier.padding(horizontal = 12.dp)
                                     )
 
                                     OutlinedButton(
                                         onClick = { viewModel.agregarAlCarrito(item.producto) },
                                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFC41230))
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF3B30))
                                     ) { Text("+", fontSize = 18.sp) }
 
                                     Spacer(modifier = Modifier.weight(1f))
 
                                     IconButton(onClick = { viewModel.eliminarDelCarrito(item.producto) }) {
-                                        Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFC41230))
+                                        Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFFF3B30))
                                     }
                                 }
                             }
@@ -136,19 +139,19 @@ fun CarritoScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Total:", fontWeight = FontWeight.Bold)
+                        Text("Total:", fontWeight = FontWeight.Bold, color = Color.White)
                         Text(
                             "$${"%.2f".format(viewModel.totalCarrito())}",
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 18.sp,
-                            color = Color(0xFFC41230)
+                            color = Color(0xFFFF3B30)
                         )
                     }
                 }
@@ -156,13 +159,13 @@ fun CarritoScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 error?.let {
-                    Text(it, color = Color(0xFFC41230), modifier = Modifier.padding(bottom = 8.dp))
+                    Text(it, color = Color(0xFFFF3B30), modifier = Modifier.padding(bottom = 8.dp))
                 }
 
                 OutlinedButton(
                     onClick = { viewModel.limpiarCarrito() },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFC41230))
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF3B30))
                 ) { Text("Limpiar carrito") }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -176,7 +179,8 @@ fun CarritoScreen(
                     Text(
                         if (cargando) "Procesando..." else "Confirmar compra",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
+                        color = Color.White
                     )
                 }
             }

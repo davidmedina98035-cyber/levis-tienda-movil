@@ -1,8 +1,10 @@
 package com.example.levisappadmin
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
@@ -28,10 +30,12 @@ import com.example.levisappadmin.ui.theme.EditarProductoScreen
 import com.example.levisappadmin.ui.theme.ForgotPasswordScreen
 import com.example.levisappadmin.ui.theme.InventarioScreen
 import com.example.levisappadmin.ui.theme.LoginScreen
+import com.example.levisappadmin.ui.theme.ProveedoresScreen
 import com.example.levisappadmin.ui.theme.RegisterScreen
 import com.example.levisappadmin.ui.theme.UsuariosScreen
 import com.example.levisappadmin.ui.theme.VentasScreen
 import com.example.levisappadmin.viewmodel.CatalogoViewModel
+import androidx.compose.foundation.BorderStroke
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +56,7 @@ class MainActivity : ComponentActivity() {
                         onLoginSuccess = { tkn, email, id ->
                             token = tkn
                             emailUsuario = email
-                            idUsuario = id
+                            idUsuario = id.toIntOrNull() ?: 0
                             pantalla = "dashboard"
                         },
                         onRegisterClick = { pantalla = "register" },
@@ -71,7 +75,8 @@ class MainActivity : ComponentActivity() {
                         onUsuariosClick = { pantalla = "usuarios" },
                         onVentasClick = { pantalla = "ventas" },
                         onAjustesClick = { pantalla = "ajustes" },
-                        onCatalogoClick = { pantalla = "catalogo" }
+                        onCatalogoClick = { pantalla = "catalogo" },
+                        onProveedoresClick = { pantalla = "proveedores" }
                     )
                     "ajustes" -> AjustesScreen(
                         token = token ?: "",
@@ -92,6 +97,10 @@ class MainActivity : ComponentActivity() {
                         onBack = { pantalla = "dashboard" }
                     )
                     "ventas" -> VentasScreen(
+                        token = token ?: "",
+                        onBack = { pantalla = "dashboard" }
+                    )
+                    "proveedores" -> ProveedoresScreen(
                         token = token ?: "",
                         onBack = { pantalla = "dashboard" }
                     )
@@ -131,27 +140,35 @@ fun MainDashboard(
     onUsuariosClick: () -> Unit,
     onVentasClick: () -> Unit,
     onAjustesClick: () -> Unit,
-    onCatalogoClick: () -> Unit
+    onCatalogoClick: () -> Unit,
+    onProveedoresClick: () -> Unit
 ) {
+    val backgroundColor = Color(0xFF0B0B0B)
+    val cardBackground = Color(0xFF121212)
+    val neonRed = Color(0xFFE31837)
+    val subtitleColor = Color(0xFF888888)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFEEEEEE))
-            .padding(16.dp)
+            .background(backgroundColor)
+            .padding(20.dp)
     ) {
+        Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = "LEVI'S",
-            fontSize = 40.sp,
+            fontSize = 36.sp,
             fontWeight = FontWeight.Black,
-            color = Color(0xFFC41230),
-            modifier = Modifier.padding(top = 20.dp)
+            color = neonRed,
+            letterSpacing = 2.sp
         )
         Text(
             text = "SISTEMA DE ADMINISTRACIÓN",
-            fontSize = 14.sp,
+            fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 30.dp)
+            color = Color.White,
+            letterSpacing = 1.5.sp,
+            modifier = Modifier.padding(bottom = 28.dp)
         )
 
         LazyVerticalGrid(
@@ -159,11 +176,12 @@ fun MainDashboard(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item { MenuCard("Inventario", Icons.Default.List, "Stock Jeans", onClick = onInventarioClick) }
-            item { MenuCard("Usuarios", Icons.Default.Person, "Roles", onClick = onUsuariosClick) }
-            item { MenuCard("Ventas", Icons.Default.ShoppingCart, "Facturas", onClick = onVentasClick) }
-            item { MenuCard("Ajustes", Icons.Default.Settings, "Config", onClick = onAjustesClick) }
-            item { MenuCard("Catálogo", Icons.Default.Info, "Nueva venta", onClick = onCatalogoClick) }
+            item { MenuCard("Inventario", Icons.Default.List, "Stock Jeans", cardBackground, neonRed, subtitleColor, onInventarioClick) }
+            item { MenuCard("Usuarios", Icons.Default.Person, "Roles", cardBackground, neonRed, subtitleColor, onUsuariosClick) }
+            item { MenuCard("Ventas", Icons.Default.ShoppingCart, "Facturas", cardBackground, neonRed, subtitleColor, onVentasClick) }
+            item { MenuCard("Ajustes", Icons.Default.Settings, "Config", cardBackground, neonRed, subtitleColor, onAjustesClick) }
+            item { MenuCard("Catálogo", Icons.Default.Info, "Nueva venta", cardBackground, neonRed, subtitleColor, onCatalogoClick) }
+            item { MenuCard("Proveedores", Icons.Default.Business, "Aliados", cardBackground, neonRed, subtitleColor, onProveedoresClick) }
         }
     }
 }
@@ -173,30 +191,46 @@ fun MenuCard(
     title: String,
     icon: ImageVector,
     subtitle: String,
+    cardBg: Color,
+    neonRed: Color,
+    subColor: Color,
     onClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
-            .height(160.dp)
+            .height(150.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        border = BorderStroke(1.dp, Color(0xFF1F1F1F))
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = Color(0xFFC41230)
+                modifier = Modifier.size(36.dp),
+                tint = neonRed
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(text = title, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
-            Text(text = subtitle, fontSize = 12.sp, color = Color.Gray)
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color.White,
+                letterSpacing = 1.sp
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = subtitle,
+                fontSize = 12.sp,
+                color = subColor
+            )
         }
     }
 }

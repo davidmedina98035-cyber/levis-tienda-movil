@@ -23,5 +23,6 @@ data class ActualizarUsuarioRequest(
     val email: String,
     val rol: String,
     val telefono: String? = null,
-    val direccion: String? = null
+    val direccion: String? = null,
+    val password: String? = null
 )

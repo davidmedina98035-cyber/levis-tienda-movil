@@ -1,25 +1,29 @@
 package com.example.levisappadmin.ui.theme
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.levisappadmin.model.Producto
 import com.example.levisappadmin.viewmodel.InventarioViewModel
 
@@ -38,17 +42,18 @@ fun InventarioScreen(
 
     var busqueda by remember { mutableStateOf("") }
     var categoriaSeleccionada by remember { mutableStateOf("Todas") }
-    var expandedFiltro by remember { mutableStateOf(false) }
 
-    val categorias = listOf("Todas", "pantalon", "camiseta", "chaqueta", "accesorio")
+    val backgroundColor = Color(0xFF0B0B0B)
+    val cardBackground = Color(0xFF121212)
+    val borderColor = Color(0xFF1F1F1F)
+    val neonRed = Color(0xFFE31837)
 
-    // ✅ Filtro aplicado localmente
     val productosFiltrados = productos.filter { producto ->
-        val coincideNombre = (producto.nombreProducto ?: "")
-            .lowercase()
-            .contains(busqueda.lowercase())
+        val nombre = producto.nombreProducto ?: ""
+        val coincideNombre = nombre.lowercase().contains(busqueda.lowercase())
+        val catProd = producto.categoria ?: "Sin categoría"
         val coincideCategoria = categoriaSeleccionada == "Todas" ||
-                producto.categoria?.lowercase() == categoriaSeleccionada.lowercase()
+                catProd.lowercase() == categoriaSeleccionada.lowercase()
         coincideNombre && coincideCategoria
     }
 
@@ -59,14 +64,14 @@ fun InventarioScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Inventario", fontWeight = FontWeight.Bold) },
+                title = { Text("GESTIÓN DE INVENTARIO", fontWeight = FontWeight.Black, fontSize = 16.sp, letterSpacing = 1.sp) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFC41230),
+                    containerColor = Color(0xFF0B0B0B),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
@@ -75,28 +80,30 @@ fun InventarioScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAgregar,
-                containerColor = Color(0xFFC41230)
+                containerColor = neonRed,
+                contentColor = Color.White
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Agregar", tint = Color.White)
+                Icon(Icons.Default.Add, contentDescription = "Agregar Ítem")
             }
-        }
+        },
+        containerColor = backgroundColor
     ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFEEEEEE))
+                .background(backgroundColor)
                 .padding(padding)
         ) {
             when {
                 cargando -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color(0xFFC41230)
+                        color = neonRed
                     )
                 }
                 error != null -> {
                     Text(
-                        text = error ?: "",
+                        text = error ?: "Error desconocido",
                         color = Color.Red,
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -106,57 +113,39 @@ fun InventarioScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        item {
+                            Text(
+                                text = "Control de existencias, tallas y referencias en tiempo real.",
+                                color = Color(0xFF888888),
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+
                         item {
                             OutlinedTextField(
                                 value = busqueda,
                                 onValueChange = { busqueda = it },
-                                label = { Text("Buscar producto...") },
+                                label = { Text("Buscar producto o referencia...", color = Color.Gray) },
                                 leadingIcon = {
-                                    Icon(Icons.Default.Search, contentDescription = null)
+                                    Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray)
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
-                                singleLine = true
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = neonRed,
+                                    unfocusedBorderColor = borderColor,
+                                    focusedContainerColor = cardBackground,
+                                    unfocusedContainerColor = cardBackground,
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White
+                                )
                             )
                         }
 
-
-                        item {
-                            ExposedDropdownMenuBox(
-                                expanded = expandedFiltro,
-                                onExpandedChange = { expandedFiltro = !expandedFiltro }
-                            ) {
-                                OutlinedTextField(
-                                    value = categoriaSeleccionada,
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    label = { Text("Filtrar por categoría") },
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedFiltro)
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .menuAnchor(),
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = expandedFiltro,
-                                    onDismissRequest = { expandedFiltro = false }
-                                ) {
-                                    categorias.forEach { cat ->
-                                        DropdownMenuItem(
-                                            text = { Text(cat) },
-                                            onClick = {
-                                                categoriaSeleccionada = cat
-                                                expandedFiltro = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
                         item {
                             Text(
                                 text = "${productosFiltrados.size} producto(s) encontrado(s)",
@@ -181,69 +170,213 @@ fun InventarioScreen(
                             }
                         } else {
                             items(productosFiltrados) { producto ->
-                                Card(
-                                    shape = RoundedCornerShape(16.dp),
-                                    elevation = CardDefaults.cardElevation(4.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = "$ ${producto.precioProducto ?: 0.0}",                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 16.sp
-                                            )
-                                            Text(
-                                                text = "$ ${producto.precioProducto}",
-                                                color = Color(0xFFC41230),
-                                                fontWeight = FontWeight.SemiBold
-                                            )
-                                            Text(
-                                                text = "Stock: ${producto.stockProducto}",
-                                                color = Color.Gray,
-                                                fontSize = 12.sp
-                                            )
-                                            Text(
-                                                text = "Talla: ${producto.talla ?: "N/A"}",
-                                                color = Color.Gray,
-                                                fontSize = 12.sp
-                                            )
-                                            Text(
-                                                text = "Categoría: ${producto.categoria ?: "N/A"}",
-                                                color = Color.Gray,
-                                                fontSize = 12.sp
-                                            )
-                                        }
-                                        Row {
-                                            IconButton(onClick = { onEditar(producto) }) {
-                                                Icon(
-                                                    Icons.Default.Edit,
-                                                    contentDescription = "Editar",
-                                                    tint = Color(0xFFC41230)
-                                                )
-                                            }
-                                            IconButton(
-                                                onClick = {
-                                                    viewModel.eliminarProducto(token, producto.id_producto ?: 0)                                                }
-                                            ) {
-                                                Icon(
-                                                    Icons.Default.Delete,
-                                                    contentDescription = "Eliminar",
-                                                    tint = Color.Red
-                                                )
-                                            }
-                                        }
+                                InventarioCardItem(
+                                    producto = producto,
+                                    cardBackground = cardBackground,
+                                    borderColor = borderColor,
+                                    neonRed = neonRed,
+                                    onEditar = { onEditar(producto) },
+                                    onCambiarEstado = { nuevoEstado ->
+                                        val idProd = producto.id_producto ?: producto.id ?: 0
+                                        viewModel.cambiarEstadoProducto(token, idProd, nuevoEstado)
                                     }
-                                }
+                                )
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun InventarioCardItem(
+    producto: Producto,
+    cardBackground: Color,
+    borderColor: Color,
+    neonRed: Color,
+    onEditar: () -> Unit,
+    onCambiarEstado: (Boolean) -> Unit
+) {
+    val idReal = producto.id_producto ?: producto.id ?: 0
+    val nombre = producto.nombreProducto ?: "Sin nombre"
+    val categoria = producto.categoria ?: "Sin categoría"
+    val colorText = producto.color ?: "N/A"
+    val generoText = producto.genero ?: "Unisex"
+    val precio = producto.precioProducto ?: 0.0
+
+    val estaActivo = producto.estaActivo
+    val imageUrl = if (!producto.imagen.isNullOrEmpty()) {
+        if (producto.imagen.startsWith("http")) producto.imagen
+        else "http://192.168.1.9:3002${producto.imagen}"
+    } else ""
+
+    // Procesar las tallas y el stock total
+    val tallasLista = producto.tallas ?: emptyList()
+    val desgloseTallas = if (tallasLista.isNotEmpty()) {
+        tallasLista.joinToString(" | ") { "${it.talla ?: "?"}: ${it.stock ?: 0}" }
+    } else {
+        "Sin tallas registradas"
+    }
+    val stockTotal = producto.totalStock
+
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBackground),
+        border = BorderStroke(1.dp, borderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(if (estaActivo) Color(0xFF22C55E) else neonRed)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "REF #$idReal",
+                        color = if (estaActivo) Color.White else Color.Gray,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Surface(
+                    color = Color(0xFF1A1A1A),
+                    shape = RoundedCornerShape(6.dp)
+                ) {
+                    Text(
+                        text = categoria,
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (imageUrl.isNotEmpty()) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.DarkGray),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.DarkGray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("N/A", color = Color.Gray, fontSize = 12.sp)
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = nombre,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        maxLines = 1
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Género: $generoText | Color: $colorText",
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "$ $precio",
+                        color = neonRed,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // SECCIÓN DE STOCK Y TALLAS NUEVA
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color(0xFF161616),
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color(0xFF222222))
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Text(
+                        text = "Tallas: $desgloseTallas",
+                        color = Color.LightGray,
+                        fontSize = 12.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Stock Total: $stockTotal",
+                        color = if (stockTotal > 0) Color(0xFF22C55E) else neonRed,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Divider(color = borderColor, thickness = 1.dp)
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onEditar) {
+                    Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Editar", color = Color.White, fontSize = 12.sp)
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                TextButton(onClick = { onCambiarEstado(!estaActivo) }) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(if (estaActivo) Color(0xFF22C55E) else neonRed)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (estaActivo) "Desactivar" else "Activar",
+                        color = if (estaActivo) Color(0xFF888888) else Color(0xFF22C55E),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }
