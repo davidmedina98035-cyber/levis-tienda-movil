@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    private const val BASE_URL = "http://192.168.1.9:3002/"
+    private const val BASE_URL = "https://sistema-de-inventario-levis-production.up.railway.app/"
 
     val api: ApiService by lazy {
         val logging = HttpLoggingInterceptor().apply {

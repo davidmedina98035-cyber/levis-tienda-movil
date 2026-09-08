@@ -94,7 +94,7 @@ interface ApiService {
     ): Response<Usuario>
 
     // --- REPORTE DE VENTAS REACTIVADO ---
-    @GET("api/ReporteVentas")
+    @GET("api/productos/reporte-ventas")
     suspend fun getReporteVentas(
         @Header("Authorization") token: String
     ): Response<List<VentaDetalleRaw>>
